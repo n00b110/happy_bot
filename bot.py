@@ -1,53 +1,33 @@
 import discord
-import responses
+import images
+from PIL import Image
+import io
 from dotenv import dotenv_values
 
-
-env_vars = dotenv_values() 
-
+env_vars = dotenv_values()
 TOKEN = env_vars['TOKEN']
 
+intents = discord.Intents.default()
+intents.message_content = True
 
-async def send_message(message, user_message, is_private):
-    try:
-        response = responses.get_response(user_message) # needs to be implemented
-        await message.author.send(response) if is_private else await message.channel.send(response)
-
-    except Exception as e:
-        print(e)
+bot = discord.Client(intents=intents)
 
 
 
+@bot.event
+async def on_message(msg):
+    if msg.author == bot.user:
+        return
 
-def run_discord_bot():
-    TOKEN = "MTEyNzA2OTA0OTUxNjQ3MDI5Mg.GUqxfU.a_FzNw157mugXyM1hIr6sGTFxTToXh-sQzZ-ew"
-    intents = discord.Intents.default()
-    intents.message_content = True
-    client = discord.Client(intents=intents)
-
-    @client.event
-    async def on_ready():
-        print(f"{client.user} is now running!")
-
-
-    @client.event
-    async def on_message(message):
-        if message.author == client.user:
-            return 
-
-        username = str(message.author)
-        user_message = str(message.content)
-        channel = str(message.channel)
-        
-        print(f'{username} said: "{user_message}" ({channel})' )
-
-
-        if user_message[0] == '?':
-            user_message = user_message[1:]
-            await send_message(message, user_message, is_private=True)
-
-        else:
-            await send_message(message, user_message, is_private=False)
-
-        
-    client.run(TOKEN)
+    elif msg.attachments:
+        for attachement in msg.attachments:
+            print("1")
+            img_bytes = await attachement.read()
+            with open("image.jpg", "wb") as f:
+                f.write(img_bytes)
+            image = Image.open("image.jpg").convert("L")
+            image.save("gray.jpg")
+            await msg.channel.send(file=discord.File('gray.jpg', filename='gray_image.png'))
+            
+            
+bot.run(TOKEN)

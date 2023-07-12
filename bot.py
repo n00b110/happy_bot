@@ -21,7 +21,6 @@ async def on_message(msg):
 
     elif msg.attachments:
         for attachement in msg.attachments:
-            print("1")
             img_bytes = await attachement.read()
             with open("image.jpg", "wb") as f:
                 f.write(img_bytes)
